@@ -22,6 +22,7 @@
 
 #define VERSION "2.0.1.2"
 
+#include <unistd.h>
 #include <iostream>
 #include <string.h>
 #include <stdlib.h>
