@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #ifndef IDEVICE_H_
 
 #include "LazyUSB.h"
@@ -26,12 +25,12 @@
 #define LOG_FILE			".irecovery_history"
 
 class IDevice {
-	
+
 public:
-	
+
 	//Constructors
 	IDevice();
-	
+
 	//Methods
 	bool AutoBoot();
 	bool Connect();
@@ -44,9 +43,9 @@ public:
 	bool SendBuffer(char* data, int length, int* actual_length);
     void Shell();
 	bool Upload(const char* file);
-	
+
 private:
-	
+
 	//Properties
 	LazyUSB USB;
 };

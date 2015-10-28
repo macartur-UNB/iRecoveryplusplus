@@ -15,9 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include <iostream>
-#include <stdio.h>
 #include "Win32.h"
 #if defined(WINDOWS)
 /* lets support this at the lowest level! */
@@ -31,26 +28,26 @@
 #define LAZYUSB_H_
 
 class LazyUSB {
-	
+
 public:
 	LazyUSB();
-	
+
 	bool ClaimInterface(int interface);
 	bool ClaimAltInterface(int interface, int alt_interface);
 	bool Close();
 	bool Configure(int mode);
-	
+
 	bool Open(int vendorID, int productID);
-	
+
 	bool ReleaseInterface(int interface);
 	void Reset();
-	
+
 	int Transfer(uint8_t requestType, uint8_t request, uint16_t value, uint16_t index, const char* data, uint16_t length, int timeout);
 	int Write(unsigned char endPoint, char *data, int length, int* actual_length, int timeout);
 	int Read(unsigned char endPoint, char *data, int length, int* actual_length, int timeout);
-	
+
 	bool IsConnected();
-	
+
 private:
 #if defined(WINDOWS)
 	struct usb_device_handle *handle;

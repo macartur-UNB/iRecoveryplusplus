@@ -17,112 +17,115 @@
  */
 
 #include <iostream>
+#include <cstdlib>
+#include <unistd.h>
 #include "Program.h"
+#include "IDevice.h"
 
 using namespace std;
 
 static IDevice Device;
 
 int main(int argc, char *argv[]) {
-	
+
 	cout << "iRecovery++  Copyright (C) 2010  GreySyntax\r\n";
 	cout << "This program comes with ABSOLUTELY NO WARRANTY; for details `./iRecovery -w'.\r\n";
 	cout << "This is free software, and you are welcome to redistribute it\r\n";
 	cout << "under certain conditions; type `./iRecovery -o' for details.\r\n" << endl;
-	
+
 	if (! (argc > 1)) {
-		
+
 		flags();
 		return -1;
 	}
-	
+
 	int c;
-	
+
 	while ((c = getopt(argc, argv, "acerosuwvh:")) != -1) {
-		
+
 		switch (c) {
-			
+
 			case 'a':
 				if (! Device.IsConnected() && ! Device.Connect()) {
-					
+
 					return -1;
 				}
-				
+
 				if (! Device.AutoBoot()) {
-					
+
 					return 1;
 				}
-				
+
 				break;
-				
+
 			case 'c':
 				if (! Device.IsConnected() && ! Device.Connect()) {
-				
+
 					return -1;
 				}
-				
+
 				if (Device.SendCommand(optarg)) {
-					
+
 					continue;
 				}
 
 				break;
-				
+
 			case 'e':
-				
+
 				cout << "Not implemented. :(" << endl;
 				break;
-				
+
 			case 'r':
 				if (! Device.IsConnected() && ! Device.Connect()) {
-				
+
 					return -1;
 				}
-				
+
 				Device.Reset();
 				break;
-				
+
 			case 'o':
 				conditions();
 				break;
-				
+
 			case 's':
 				if (! Device.IsConnected() && ! Device.Connect()) {
-				
+
 					return -1;
 				}
-				
+
 				Device.Shell();
 				break;
-				
+
 			case 'u':
 				if (! Device.IsConnected() && ! Device.Connect()) {
-			
+
 					return -1;
 				}
-			
+
 				if (! Device.Upload(optarg)) {
-				
+
 					continue;
 				}
 				break;
-			
+
 			case 'w':
 				warranty();
 				break;
-			
+
 			case 'v':
 				cout << "iRecovery++ " << VERSION << "," << endl;
 				cout << "Thanks to: lilstevie, pod2g, tom3q, planetbeing, geohot, posixninja and westbaer." << endl << endl;
 				break;
-				
+
 			case '?':
 			case 'h':
 				flags();
 				break;
 		}
 	}
-	
+
 	return 1;
 }
 
@@ -153,7 +156,7 @@ void conditions() {
 }
 
 void flags() {
-	
+
 	cout << endl;
 	cout << "-a\t\tenable auto-boot and reboot the device.\r\n";
 	cout << "-c <arg>\tsend a command to the device.\r\n";
@@ -168,7 +171,7 @@ void flags() {
 }
 
 void shutdown() {
-	
+
 	Device.Disconnect();
 	exit(1);
 }

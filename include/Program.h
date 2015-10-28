@@ -20,13 +20,6 @@
 
 #define PROGRAM_H_
 
-#include <sys/types.h>
-#include <errno.h>
-#include <signal.h>
-#include <ctype.h>
-#include "IDevice.h"
-#include "Common.h"
-
 void conditions();
 void flags();
 void shutdown(int sig);
