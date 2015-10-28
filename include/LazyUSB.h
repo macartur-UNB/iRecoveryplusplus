@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "Win32.h"
+#include "Common.h"
 #if defined(WINDOWS)
 /* lets support this at the lowest level! */
 #include <usb.h>

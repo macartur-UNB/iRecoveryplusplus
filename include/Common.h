@@ -20,7 +20,7 @@
 #define COMMON_H_
 
 #define VERSION "2.0.1.2"
-
+#include <iostream>
 #include <readline/readline.h>
 #include <readline/history.h>
 
