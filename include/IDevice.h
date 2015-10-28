@@ -18,20 +18,20 @@
 
 #ifndef IDEVICE_H_
 
-#include "LazyUSB.h"
 #include "Common.h"
 
 #define IDEVICE_H_
 #define APPLE_VENDOR_ID		0x05AC
 #define LOG_FILE			".irecovery_history"
 
+class LazyUSBImpl;
 class IDevice {
-	
+
 public:
-	
+
 	//Constructors
 	IDevice();
-	
+
 	//Methods
 	bool AutoBoot();
 	bool Connect();
@@ -44,11 +44,9 @@ public:
 	bool SendBuffer(char* data, int length, int* actual_length);
     void Shell();
 	bool Upload(const char* file);
-	
+
 private:
-	
-	//Properties
-	LazyUSB USB;
+  LazyUSBImpl * lazyusbimpl;
 };
 
 #endif /* IDEVICE_H_ */

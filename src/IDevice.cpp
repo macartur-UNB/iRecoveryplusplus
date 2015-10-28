@@ -17,8 +17,25 @@
  */
 
 #include "IDevice.h"
+#include "LazyUSB.h"
 
 using namespace std;
+
+class LazyUSBImpl
+{
+public:
+  LazyUSBImpl();
+  ~LazyUSBImpl();
+  LazyUSB usb();
+private:
+  LazyUSB USB;
+};
+LazyUSBImpl::LazyUSBImpl(){}
+LazyUSB
+LazyUSBImpl::usb()
+{
+  return this->USB;
+}
 
 enum {
 	kRecoveryMode	= 0x1281,
@@ -34,87 +51,87 @@ enum {
 static char *deftext;
 
 static int set_deftext() {
-	
+
 	if (deftext) {
-		
+
 		rl_insert_text(deftext);
 		deftext = (char *) NULL;
 		rl_startup_hook = (rl_hook_func_t *)NULL;
 	}
-	
-	return 0; 
+
+	return 0;
 }
 
 IDevice::IDevice() {
-	
+  this->lazyusbimpl = new LazyUSBImpl();
 	//Stub
 }
 
 bool IDevice::AutoBoot() {
-	
+
 	if (! IsConnected()) {
 		Connect();
 	}
-	
+
 	if (SendCommand("setenv auto-boot true") && SendCommand("saveenv")) {
-		
+
 		//Usually causes errors, lets ignore the status of this one
 		SendCommand("reboot");
-		
+
 		cout << "[IDevice::AutoBoot] Enabled auto-boot, rebooting device." << endl;
 		return true;
 	}
-	
+
 	cout << "[IDevice::AutoBoot] Failed to enable auto-boot." << endl;
 	return false;
 }
 
 bool IDevice::Connect() {
-	
+
 	if (IsConnected()) {
 		Disconnect();
 	}
-	
-	if (! USB.Open(APPLE_VENDOR_ID, kRecoveryMode)) {
-		
+
+	if (! lazyusbimpl->usb().Open(APPLE_VENDOR_ID, kRecoveryMode)) {
+
 		cout << "[IDevice::Connect] Failed to connect to recovery." << endl;
-		
-		if (! USB.Open(APPLE_VENDOR_ID, kWTFMode)) {
-			
+
+		if (! lazyusbimpl->usb().Open(APPLE_VENDOR_ID, kWTFMode)) {
+
 			cout << "[IDevice::Connect] Failed to connect to wtf." << endl;
-			
-			if (! USB.Open(APPLE_VENDOR_ID, kDFUMode)) {
-				
+
+			if (! lazyusbimpl->usb().Open(APPLE_VENDOR_ID, kDFUMode)) {
+
 				cout << "[IDevice::Connect] Failed to connect to dfu." << endl;
 				return false;
 			}
 		}
 	}
-	
-	if (! USB.Configure(1)) {
-		
+
+	if (! lazyusbimpl->usb().Configure(1)) {
+
 		cout << "[IDevice::Connect] Failed to set usb configuration." << endl;
 		Disconnect();
 		return false;
 	}
-	
-	if (! USB.ClaimInterface(0) || ! USB.ClaimInterface(1)) {
-		
+
+	if (! lazyusbimpl->usb().ClaimInterface(0) || ! lazyusbimpl->usb().ClaimInterface(1)) {
+
 		cout << "[IDevice::Connect] Failed to claim interface's." << endl;
 		Disconnect();
 		return false;
 	}
-	
+
 	return true;
 }
 
 void IDevice::Disconnect() {
-	
+
 	if (! IsConnected()) {
 		return;
 	}
-	
-	USB.Close();
+
+	lazyusbimpl->usb().Close();
 	cout << "[IDevice::Disconnect] Closed connection." << endl;
 }
 
@@ -123,146 +140,146 @@ bool IDevice::Exploit(const char* file) {
     /*
      * I was going to add the 3.1.2 usb_control_msg(0x21) exploit here but,
      * i couldnt really find a reason todo so.
-     */	
+     */
     return false;
 }
 
 bool IDevice::IsConnected() {
 
-	return USB.IsConnected();
+	return lazyusbimpl->usb().IsConnected();
 }
 
 void IDevice::Reset() {
-	
+
 	if (! IsConnected()) {
 		Connect();
 	}
-	
-	USB.Reset();
+
+	lazyusbimpl->usb().Reset();
 }
 
 bool IDevice::SendCommand(const char* argv) {
-	
+
 	int length = strlen(argv);
-	
+
 	if (length > kCommandMaxLen) {
-		
+
 		cout << "[IDevice::SendCommand] Command to long, aborting." << endl;
 		return false;
 	}
-	
+
 	if (! IsConnected()) {
 		Connect();
 	}
-	
-	if (! USB.Transfer(0x40, 0, 0, 0, argv, (length + 1), kCommandTimeout)) {
-		
+
+	if (! lazyusbimpl->usb().Transfer(0x40, 0, 0, 0, argv, (length + 1), kCommandTimeout)) {
+
 		cout << "[IDevice::SendCommand] Failed to send command." << endl;
 		return false;
 	}
-	
+
 	add_history(argv);
 	write_history(LOG_FILE);
-	
+
 	char* action = strtok(strdup(argv), " ");
-	
+
 	if (! strcmp(action, "getenv")) {
-		
+
 		char response[0x200];
-		USB.Transfer(0xC0, 0, 0, 0, response, 0x200, (kCommandTimeout * 2));
+		lazyusbimpl->usb().Transfer(0xC0, 0, 0, 0, response, 0x200, (kCommandTimeout * 2));
 		cout << response << endl;
 	}
-	
+
 	return true;
 }
 
 bool IDevice::SendBuffer(char* data, int length, int* actual_length) {
-    
+
 	if (! IsConnected()) {
 		Connect();
 	}
-    
-	if (! IsConnected() || ! USB.Configure(1) || ! USB.ClaimAltInterface(1, 1)) {
-		
+
+	if (! IsConnected() || ! lazyusbimpl->usb().Configure(1) || ! lazyusbimpl->usb().ClaimAltInterface(1, 1)) {
+
 		return false;
 	}
-	
-	if (USB.Write(0x04, data, length, actual_length, kUploadTimeout) != 0) {
-		
+
+	if (lazyusbimpl->usb().Write(0x04, data, length, actual_length, kUploadTimeout) != 0) {
+
 		return false;
 	}
-	
+
 	return true;
 }
 
 void IDevice::Shell() {
-    
+
 	if (! IsConnected()) {
 		Connect();
 	}
-    
-    if (! IsConnected() || ! USB.Configure(1) || ! USB.ClaimAltInterface(1, 1)) {
-        
+
+    if (! IsConnected() || ! lazyusbimpl->usb().Configure(1) || ! lazyusbimpl->usb().ClaimAltInterface(1, 1)) {
+
         return;
     }
-    
+
     char* buffer = (char*)malloc(kBufferSize);
-    
+
     if (buffer == NULL) {
-		
+
         return;
     }
-    
+
     //TODO Log to file
-    
+
     bool runShell = true;
 	int available = 0, pos = 0;
 	char *prompt, *temp;
 
 	deftext = (char *)0;
-	
+
 	if (deftext && *deftext) {
-		
+
 		rl_startup_hook = set_deftext;
 	}
-	
+
 	read_history(LOG_FILE);
-    
+
     while (runShell) {
-        
+
 		available = 0;
-        
+
         memset(buffer, 0, kBufferSize);
-        USB.Read(0x81, buffer, kBufferSize, &available, kCommandTimeout);
-        
+        lazyusbimpl->usb().Read(0x81, buffer, kBufferSize, &available, kCommandTimeout);
+
         if (available > 0) {
-            
+
 			for (pos = 0; pos < available; pos++) {
-				
+
 				cout << buffer[pos];
 			}
-			
+
             free(buffer);
             buffer = (char*)malloc(kBufferSize);
         }
-		
+
 		temp = readline("IDevice$ ");
-		
+
 		if (temp != 0 && temp && *temp) {
 
 			if (temp[0] == '/' && strlen(temp) > 1 && temp[1] != ' ') {
-				
+
 				if (! strcmp(temp, "/exit")) {
-					
+
 					break;
 				}
-					
+
 				//TODO Handle commands
 			} else {
-				
+
 				SendCommand(temp);
 			}
-			
+
 			//Ciao bitch!
 			free(temp);
 		}
@@ -270,33 +287,33 @@ void IDevice::Shell() {
 }
 
 bool IDevice::Upload(const char* file) {
-	
+
 	FILE* data = fopen(file, "rb");
-	
+
 	if (data == NULL) {
 		cout << "[IDevice::Upload] Failed to open file " << file << endl;
 		return false;
 	}
-	
+
 	cout << "[IDevice::Upload] Attemtping to upload file" << endl;
-	
+
 	fseek(data, 0, SEEK_END);
 	unsigned int length = ftell(data);
 	fseek(data, 0, SEEK_SET);
-	
+
 	char* buffer = (char*)malloc(length);
-	
+
 	if (buffer == NULL) {
-		
+
 		cout << "[IDevice::Upload] Failed to allocate " << length << " bytes" << endl;
 		fclose(data);
 		return false;
 	}
-	
+
 	fread(buffer, 1, length, data);
 	fclose(data);
-	
+
 	int actual_length = 0;
-	
+
 	return SendBuffer(buffer, length, &actual_length);
 }
