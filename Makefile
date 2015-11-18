@@ -1,4 +1,4 @@
-CXXFLAGS =	-O2 -g -Wall -fmessage-length=0 -I./include
+CXXFLAGS =	-O2 -g -Wall -fmessage-length=0 -I./include -Wl,-fuse-ld=gold
 CXXALL =	-lreadline
 CXXCSS =	-I"./include" -I"/usr/local/include" -L"/usr/local/lib"
 CXXWIN =	-lusb -I"./include" -I"C:\MinGW\include" -L"C:\MinGW\lib"
@@ -23,11 +23,11 @@ start:
 
 linux:	start $(SOURCE)
 	@mkdir ./bin;
-	$(CXX) -o $(TARGET) $(SOURCE) $(CXXCSS) $(CXXALL) $(CXXNIX)
+	$(CXX) -o $(TARGET) $(SOURCE) $(CXXCSS) $(CXXALL) $(CXXNIX) $(CXXFLAGS)
 	
 mach:	start $(SOURCE)
 	@mkdir ./bin;
-	$(CXX) -o $(TARGET) $(SOURCE) $(CXXCSS) $(CXXALL) $(CXXOSX)
+	$(CXX) -o $(TARGET) $(SOURCE) $(CXXCSS) $(CXXALL) $(CXXOSX) $(CXXFLAGS)
 
 win:	start $(SOURCE)
 	@mkdir ./bin;
