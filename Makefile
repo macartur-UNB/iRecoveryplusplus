@@ -1,4 +1,4 @@
-CXXFLAGS =	-O2 -g -Wall -fmessage-length=0 -I./include -Wl,-fuse-ld=gold
+CXXFLAGS =	-O2 -g -Wall -fmessage-length=0 -I./include
 CXXALL =	-lreadline
 CXXCSS =	-I"./include" -I"/usr/local/include" -L"/usr/local/lib"
 CXXWIN =	-lusb -I"./include" -I"C:\MinGW\include" -L"C:\MinGW\lib"
